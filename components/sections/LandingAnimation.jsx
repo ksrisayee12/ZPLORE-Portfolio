@@ -22,8 +22,6 @@ function rng(seed) {
 }
 
 // ─── Scattered positions: grid + jitter, spread across full viewport ──────────
-// Camera z=16, fov=52 → visible ≈ ±7.8 wide, ±4.4 tall at z=0
-// We spread from ±9 x, ±5.5 y (slightly beyond viewport edges)
 function makeScattered() {
   const r = rng(42)
   const cols = 6
@@ -32,7 +30,6 @@ function makeScattered() {
   return WORDS.map((_, i) => {
     const col = i % cols
     const row = Math.floor(i / cols)
-    // base grid position
     const xBase = -xSpan / 2 + (col / (cols - 1)) * xSpan
     const yBase = ySpan / 2 - (row / (rows - 1)) * ySpan
     return {
@@ -43,7 +40,7 @@ function makeScattered() {
       ry: (r() - 0.5) * 0.4,
       rz: (r() - 0.5) * 0.2,
       scale: 0.65 + r() * 0.45,
-      fadeDelay: (r() * 0.8),   // random stagger, not index-based
+      fadeDelay: (r() * 0.8),
     }
   })
 }
@@ -80,18 +77,11 @@ const lerp        = (a, b, t) => a + (b - a) * t
 const clamp       = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 const slerp       = (cur, tgt, k, dt) => cur + (tgt - cur) * Math.min(1, k * dt)
 
-// ─── Timeline (seconds, all phases overlap cleanly) ───────────────────────────
-// 0.0 – 2.0  : words float in (scattered, full screen)
-// 2.0 – 5.2  : words fly into Z formation
-// 5.2 – 6.8  : word-Z shrinks → simultaneously plain Z fades IN (seamless morph)
-// 6.8 – 8.5  : plain Z zooms big (fills screen)
-// 7.6 – 8.5  : black flash rises
-// 8.5 – 9.3  : flash fades → content reveals
+// ─── Timeline ─────────────────────────────────────────────────────────────────
 const TL = {
   scatterStart: 0.0, scatterEnd: 2.0,
   formStart:    2.0, formEnd:   5.2,
   shrinkStart:  5.2, shrinkEnd: 6.5,
-  // plain Z appears instantly at 6.5s (exactly when word-Z finishes shrinking)
   plainZStart:  6.5, plainZEnd: 6.5,
   zoomStart:    6.5, zoomEnd:   8.2,
   flashStart:   7.6, flashEnd:  8.2,
@@ -102,7 +92,6 @@ const TOTAL = 9.5
 function prog(t, a, b) { return clamp((t - a) / (b - a), 0, 1) }
 
 // ─── Build canvas texture for a word ─────────────────────────────────────────
-// Pre-built at module level when browser is available (avoids useMemo delay)
 const textureCache = new Map()
 function getWordTexture(word) {
   if (textureCache.has(word)) return textureCache.get(word)
@@ -111,12 +100,10 @@ function getWordTexture(word) {
   const ctx = canvas.getContext('2d')
   ctx.font = `700 ${fontSize}px Arial, sans-serif`
   const tw = ctx.measureText(word).width
-  // Large padding ensures NO letter is ever clipped (handles overhangs, kerning)
   const padX = 40
   const padY = 20
   canvas.width  = Math.ceil(tw + padX * 2)
   canvas.height = Math.ceil(fontSize + padY * 2)
-  // Re-apply font after resize (canvas resize resets context state)
   ctx.font = `700 ${fontSize}px Arial, sans-serif`
   ctx.textBaseline = 'middle'
   ctx.textAlign    = 'center'
@@ -134,7 +121,6 @@ function WordSprite({ word, index, animRef, sc, fm }) {
   const meshRef = useRef()
   const matRef  = useRef()
 
-  // Build texture synchronously (no async, no download)
   const { tex, aspect } = useMemo(() => {
     if (typeof window !== 'undefined') return getWordTexture(word)
     return { tex: null, aspect: 1 }
@@ -155,11 +141,8 @@ function WordSprite({ word, index, animRef, sc, fm }) {
     let tx, ty, tz, trx, try_, trz, tsc, top
 
     if (t <= TL.scatterEnd) {
-      // ── FLOAT IN (full screen scatter) ────────────────────────────
       const p = prog(t, TL.scatterStart, TL.scatterEnd)
-      // staggered fade-in using random delay per word
       const fadeP = easeOut3(clamp((p - sc.fadeDelay) / 0.5, 0, 1))
-      // gentle organic float
       tx  = sc.x + Math.sin(clk * 0.3  + index * 0.71) * 0.35
       ty  = sc.y + Math.cos(clk * 0.24 + index * 0.53) * 0.25
       tz  = sc.z + Math.sin(clk * 0.2  + index * 0.43) * 0.12
@@ -170,7 +153,6 @@ function WordSprite({ word, index, animRef, sc, fm }) {
       top = fadeP
 
     } else if (t <= TL.formEnd) {
-      // ── FLY INTO Z ────────────────────────────────────────────────
       const globalP = prog(t, TL.formStart, TL.formEnd)
       const maxDelay = 1.95
       const wStart   = (fm.formDelay / maxDelay) * 0.7
@@ -188,17 +170,15 @@ function WordSprite({ word, index, animRef, sc, fm }) {
       top = 1
 
     } else if (t <= TL.shrinkEnd) {
-      // ── SHRINK (word-Z shrinks down to 0.05 size) ───────────────────
       const p   = easeInOut2(prog(t, TL.shrinkStart, TL.shrinkEnd))
       tx  = lerp(fm.x, fm.x * 0.05, p)
       ty  = lerp(fm.y, fm.y * 0.05, p)
       tz  = lerp(fm.z, 0, p)
       trx = 0; try_ = 0; trz = 0
       tsc = lerp(fm.scale, 0.05, p)
-      top = 1 // stay opaque until handoff
+      top = 1
 
     } else {
-      // ── HANDOFF TO PLAIN Z ──────────────────────────────────────────
       tx = 0; ty = 0; tz = 0
       trx = 0; try_ = 0; trz = 0
       tsc = 0; top = 0
@@ -263,20 +243,20 @@ function Scene({ animRef, scattered, formed }) {
 export function LandingAnimationWrapper({ children, onComplete }) {
   const [done, setDone] = useState(false)
 
-  // elapsed is driven by rAF, starts only after Canvas is ready
-  const animRef  = useRef({ elapsed: -1, done: false })  // -1 = not started yet
+  const animRef  = useRef({ elapsed: -1, done: false })
   const bigZRef  = useRef(null)
   const flashRef = useRef(null)
   const bgZRef   = useRef(null)
   const rafRef   = useRef(null)
   const startRef = useRef(null)
+  // For bg Z forever animation
+  const bgZAnimRef = useRef(null)
 
   const scattered = useRef(makeScattered())
   const formed    = useRef(makeZFormation())
 
-  // Called by the Canvas onCreated — starts the timer the moment WebGL is ready
   const handleCanvasReady = () => {
-    if (startRef.current !== null) return  // already started
+    if (startRef.current !== null) return
     startRef.current = performance.now()
     startRaf()
   }
@@ -288,23 +268,19 @@ export function LandingAnimationWrapper({ children, onComplete }) {
       const t = (performance.now() - startRef.current) / 1000
       animRef.current.elapsed = t
 
-      // ── Plain Z: takes over instantly when words shrink ───────────────
       if (bigZRef.current) {
         if (t >= TL.zoomStart && t < TL.revealStart) {
-          // Zoom BIG from 0.05
           const p = easeInOut2(prog(t, TL.zoomStart, TL.zoomEnd))
           const sc = lerp(0.05, 85, p)
           const flashCov = easeInOut2(prog(t, TL.flashStart, TL.flashEnd))
           bigZRef.current.style.opacity = String(Math.max(0, 1 - flashCov))
           bigZRef.current.style.transform = `translate(-50%,-50%) scale(${sc})`
         } else {
-          // hidden before 6.5s
           bigZRef.current.style.opacity = '0'
           bigZRef.current.style.transform = 'translate(-50%,-50%) scale(0.05)'
         }
       }
 
-      // ── Black flash ───────────────────────────────────────────────────
       if (flashRef.current) {
         if (t >= TL.flashStart && t < TL.revealStart) {
           const p = easeInOut2(prog(t, TL.flashStart, TL.flashEnd))
@@ -317,12 +293,12 @@ export function LandingAnimationWrapper({ children, onComplete }) {
         }
       }
 
-      // ── Done ──────────────────────────────────────────────────────────
       if (t >= TL.revealEnd && !animRef.current.done) {
         animRef.current.done = true
         if (bgZRef.current) bgZRef.current.style.opacity = '1'
         setDone(true)
         onComplete?.()
+        startBgZAnimation()
         return
       }
 
@@ -331,16 +307,24 @@ export function LandingAnimationWrapper({ children, onComplete }) {
     rafRef.current = requestAnimationFrame(tick)
   }
 
+  // Just fade it in — CSS animation handles the spin
+  function startBgZAnimation() {
+    if (bgZRef.current) bgZRef.current.style.opacity = '1'
+  }
+
   useEffect(() => {
     const fallback = setTimeout(() => {
       if (!animRef.current.done) {
         animRef.current.done = true
         setDone(true)
         onComplete?.()
+        if (bgZRef.current) bgZRef.current.style.opacity = '1'
+        startBgZAnimation()
       }
     }, (TOTAL + 8) * 1000)
     return () => {
       cancelAnimationFrame(rafRef.current)
+      cancelAnimationFrame(bgZAnimRef.current)
       clearTimeout(fallback)
     }
   }, [onComplete])
@@ -348,29 +332,65 @@ export function LandingAnimationWrapper({ children, onComplete }) {
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100svh' }}>
 
-      {/* Ghost Z background (shown after animation) */}
+      {/* Ghost Z background — centered, uniform size, slow spin */}
       <div
         ref={bgZRef}
         aria-hidden="true"
         style={{
-          position: 'fixed', inset: 0, zIndex: 0,
-          pointerEvents: 'none', opacity: 0,
-          transition: 'opacity 2s ease-out',
+          position: 'fixed',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 0,
+          pointerEvents: 'none',
+          opacity: 0,
+          transition: 'opacity 2.5s ease-out',
+          width: '38vmin', height: '38vmin',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          overflow: 'hidden',
         }}
       >
-        <span style={{
-          fontFamily: "'ClashDisplay', 'Inter', sans-serif",
-          fontWeight: 700,
-          fontSize: 'clamp(280px, 82vw, 1350px)',
-          lineHeight: 0.85,
-          letterSpacing: '-0.05em',
-          color: 'transparent',
-          WebkitTextStroke: '1.5px rgba(255,255,255,0.06)',
-          userSelect: 'none',
-          display: 'block',
-        }}>Z</span>
+        {/* Outer orbit ring */}
+        <div style={{
+          position: 'absolute', inset: '-18%',
+          border: '1px solid rgba(255,255,255,0.04)',
+          borderRadius: '50%',
+          animation: 'bgz-orbit 28s linear infinite',
+        }} />
+        <div style={{
+          position: 'absolute', inset: '-10%',
+          border: '1px solid rgba(255,255,255,0.025)',
+          borderRadius: '50%',
+          animation: 'bgz-orbit 20s linear infinite reverse',
+        }} />
+        {/* The Z itself — slow self-rotation */}
+        <span
+          style={{
+            fontFamily: "'ClashDisplay', 'Inter', sans-serif",
+            fontWeight: 700,
+            fontSize: '38vmin',
+            lineHeight: 1,
+            letterSpacing: '-0.05em',
+            color: 'transparent',
+            WebkitTextStroke: '1px rgba(255,255,255,0.10)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.025) 50%, rgba(255,255,255,0.06) 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            userSelect: 'none',
+            display: 'block',
+            filter: 'drop-shadow(0 0 40px rgba(255,255,255,0.05))',
+            transformOrigin: 'center center',
+            animation: 'bgz-spin 35s linear infinite',
+          }}
+        >Z</span>
+        <style>{`
+          @keyframes bgz-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+          @keyframes bgz-orbit {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
 
       {/* Animation overlay */}
@@ -379,7 +399,6 @@ export function LandingAnimationWrapper({ children, onComplete }) {
           position: 'fixed', inset: 0, zIndex: 50,
           background: '#000', overflow: 'hidden',
         }}>
-          {/* Canvas starts instantly, drives animation clock via onCreated */}
           <Canvas
             dpr={[1, 1.4]}
             gl={{
@@ -406,7 +425,6 @@ export function LandingAnimationWrapper({ children, onComplete }) {
           </Canvas>
 
           {/* Plain Z — starts at natural size, zooms to fill screen */}
-          {/* Size matches the word-Z at formed scale so morph is seamless */}
           <div
             ref={bigZRef}
             style={{
@@ -414,7 +432,6 @@ export function LandingAnimationWrapper({ children, onComplete }) {
               transform: 'translate(-50%,-50%) scale(1)',
               fontFamily: "'ClashDisplay', 'Inter', sans-serif",
               fontWeight: 700,
-              // Size tuned so the Z letter visually matches the bounding box of word-Z
               fontSize: 'clamp(90px, 14vw, 200px)',
               color: '#ffffff',
               letterSpacing: '-0.05em',

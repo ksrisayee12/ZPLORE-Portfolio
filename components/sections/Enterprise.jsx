@@ -6,16 +6,16 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 const NODES = [
-  { id: 'edge', label: 'Edge', x: 80, y: 120 },
-  { id: 'gw', label: 'Gateway', x: 280, y: 80 },
-  { id: 'auth', label: 'AuthZ / mTLS', x: 280, y: 200 },
-  { id: 'orch', label: 'Orchestrator', x: 520, y: 140 },
-  { id: 'agent', label: 'Agent Mesh', x: 760, y: 60 },
-  { id: 'ml', label: 'Model Plane', x: 760, y: 220 },
-  { id: 'vec', label: 'Vector Store', x: 980, y: 140 },
-  { id: 'obs', label: 'Telemetry', x: 520, y: 320 },
-  { id: 'kms', label: 'KMS / Secrets', x: 1180, y: 80 },
-  { id: 'audit', label: 'Audit Ledger', x: 1180, y: 220 },
+  { id: 'edge', label: 'Edge', x: 100, y: 130 },
+  { id: 'gw', label: 'Gateway', x: 310, y: 85 },
+  { id: 'auth', label: 'AuthZ / mTLS', x: 310, y: 210 },
+  { id: 'orch', label: 'Orchestrator', x: 560, y: 148 },
+  { id: 'agent', label: 'Agent Mesh', x: 800, y: 65 },
+  { id: 'ml', label: 'Model Plane', x: 800, y: 235 },
+  { id: 'vec', label: 'Vector Store', x: 1020, y: 148 },
+  { id: 'obs', label: 'Telemetry', x: 560, y: 330 },
+  { id: 'kms', label: 'KMS / Secrets', x: 1200, y: 85 },
+  { id: 'audit', label: 'Audit Ledger', x: 1200, y: 235 },
 ]
 const EDGES = [
   ['edge', 'gw'], ['edge', 'auth'], ['gw', 'orch'], ['auth', 'orch'],
@@ -33,9 +33,14 @@ export default function Enterprise() {
       const nodes = svgRef.current.querySelectorAll('g.node')
       const pulses = svgRef.current.querySelectorAll('circle.pulse')
 
+      // Set all paths with dasharray for draw animation
       paths.forEach(p => {
         const len = p.getTotalLength()
-        gsap.set(p, { strokeDasharray: len, strokeDashoffset: len })
+        gsap.set(p, {
+          strokeDasharray: len,
+          strokeDashoffset: len,
+          opacity: 1, // Make sure opacity is 1 so lines are visible when drawn
+        })
       })
       gsap.set(nodes, { opacity: 0, scale: 0.6, transformOrigin: '50% 50%' })
       gsap.set(pulses, { opacity: 0 })
@@ -43,14 +48,21 @@ export default function Enterprise() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: ref.current,
-          start: 'top 70%',
-          end: 'bottom top',
-          scrub: 0.8,
+          start: 'top 65%',
+          end: 'bottom 20%',   // Extend the end so lines complete before leaving
+          scrub: 1.2,           // Slightly more scrub time so they fully draw
         }
       })
-      tl.to(paths, { strokeDashoffset: 0, duration: 1, stagger: 0.04, ease: 'power2.inOut' }, 0)
-        .to(nodes, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: 'expo.out' }, 0.2)
-        .to(pulses, { opacity: 1, duration: 0.2 }, 0.6)
+
+      // Draw ALL lines fully — use duration: 2 so they complete well before end
+      tl.to(paths, {
+        strokeDashoffset: 0,
+        duration: 2,
+        stagger: 0.06,
+        ease: 'power2.inOut',
+      }, 0)
+        .to(nodes, { opacity: 1, scale: 1, duration: 0.5, stagger: 0.06, ease: 'expo.out' }, 0.2)
+        .to(pulses, { opacity: 1, duration: 0.25 }, 0.8)
 
       // continuous light pulse animation across edges (independent of scroll)
       pulses.forEach((p, i) => {
@@ -89,24 +101,40 @@ export default function Enterprise() {
             </ul>
           </div>
           <div className="md:col-span-8">
-            <div className="border border-white/10 bg-[#0a0a0a] aspect-[1300/420] w-full overflow-hidden">
-              <svg ref={svgRef} viewBox="0 0 1300 420" className="w-full h-full">
+            <div className="border border-white/10 bg-[#0a0a0a] aspect-[1300/440] w-full overflow-hidden">
+              <svg ref={svgRef} viewBox="0 0 1300 440" className="w-full h-full">
                 <defs>
                   <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" /></pattern>
+                  {/* Glow filter for nodes */}
+                  <filter id="node-glow">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
                 </defs>
-                <rect width="1300" height="420" fill="url(#grid)" />
+                <rect width="1300" height="440" fill="url(#grid)" />
+                {/* Draw all edges with high enough opacity to be visible */}
                 {EDGES.map(([a, b], i) => {
                   const A = nodeById(a), B = nodeById(b)
                   const mx = (A.x + B.x) / 2
                   const my = (A.y + B.y) / 2 - 30
-                  return <path key={i} className="edge" d={`M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}`} stroke="white" strokeOpacity="0.45" strokeWidth="1" fill="none" />
+                  return (
+                    <path
+                      key={i}
+                      className="edge"
+                      d={`M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}`}
+                      stroke="white"
+                      strokeOpacity="0.6"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
+                  )
                 })}
-                {EDGES.map((_, i) => (<circle key={'p' + i} className="pulse" r="3" fill="white" />))}
+                {EDGES.map((_, i) => (<circle key={'p' + i} className="pulse" r="3.5" fill="white" opacity="0.9" />))}
                 {NODES.map(n => (
                   <g key={n.id} className="node" transform={`translate(${n.x} ${n.y})`}>
-                    <circle r="22" fill="#050505" stroke="white" strokeOpacity="0.8" />
-                    <circle r="3" fill="white" />
-                    <text y="42" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="11" fontFamily="Inter, sans-serif" letterSpacing="1">{n.label.toUpperCase()}</text>
+                    <circle r="24" fill="#050505" stroke="white" strokeOpacity="0.9" strokeWidth="1.5" filter="url(#node-glow)" />
+                    <circle r="3.5" fill="white" />
+                    <text y="46" textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="11" fontFamily="Inter, sans-serif" letterSpacing="1">{n.label.toUpperCase()}</text>
                   </g>
                 ))}
               </svg>

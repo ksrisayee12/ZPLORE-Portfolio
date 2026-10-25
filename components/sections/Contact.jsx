@@ -99,7 +99,15 @@ function Field({ label, name, type = 'text', focusName, setFocusName, required, 
     placeholder,
     onFocus: () => setFocusName(name),
     onBlur: () => setFocusName(null),
-    className: 'peer w-full bg-transparent border-0 outline-none py-3 text-lg text-white placeholder-white/30 caret-white',
+    // Removed outline: 'none' is covered by className, added outline: 0 to fully kill browser default ring/rectangle
+    className: 'peer w-full bg-transparent border-0 py-3 text-lg text-white placeholder-white/30 caret-white',
+    style: {
+      outline: 'none',
+      boxShadow: 'none',
+      WebkitAppearance: 'none',
+      // Explicitly remove any browser-default focus rectangle
+      WebkitTapHighlightColor: 'transparent',
+    },
   }
   return (
     <label className="block relative">

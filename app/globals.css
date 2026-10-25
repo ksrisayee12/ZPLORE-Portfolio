@@ -355,6 +355,17 @@ html.lenis, html.lenis body { height: auto; }
 /* Scrollbar */
 ::-webkit-scrollbar { width: 0; display: none; }
 
+/* Remove browser default focus outline/rectangle from all inputs (contact form) */
+input, textarea, select, button {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Custom utilities */
 .text-balance { text-wrap: balance; }
 .text-pretty { text-wrap: pretty; }

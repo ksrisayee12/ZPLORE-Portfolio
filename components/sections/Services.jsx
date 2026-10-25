@@ -16,12 +16,11 @@ const STEPS = [
 export default function Services() {
   const wrap = useRef(null)
   const track = useRef(null)
-  const pathRef = useRef(null)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       const distance = () => track.current.scrollWidth - window.innerWidth + 80
-      const tween = gsap.to(track.current, {
+      gsap.to(track.current, {
         x: () => -distance(),
         ease: 'none',
         scrollTrigger: {
@@ -35,23 +34,11 @@ export default function Services() {
           refreshPriority: 15,
         },
       })
-      // animate path
-      if (pathRef.current) {
-        const len = pathRef.current.getTotalLength()
-        gsap.set(pathRef.current, { strokeDasharray: len, strokeDashoffset: len })
-        gsap.to(pathRef.current, {
-          strokeDashoffset: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: wrap.current,
-            start: 'top top',
-            end: () => '+=' + distance(),
-            scrub: 0.8,
-          }
-        })
-      }
-      // active step (closest to center)
+
+      // Cards pop in as they approach the center
       const nodes = gsap.utils.toArray('.svc-node')
+      gsap.set(nodes, { y: 28, opacity: 0 })
+
       ScrollTrigger.create({
         trigger: wrap.current,
         start: 'top top',
@@ -62,63 +49,53 @@ export default function Services() {
           nodes.forEach((n, i) => {
             const center = i / (nodes.length - 1)
             const dist = Math.abs(p - center)
-            const active = dist < 0.12
-            n.style.opacity = active ? '1' : Math.max(0.25, 1 - dist * 2.2).toFixed(2)
-            n.style.transform = `scale(${active ? 1 : 0.92}) translateY(${active ? 0 : 6}px)`
-            n.style.filter = active ? 'blur(0)' : `blur(${Math.min(4, dist * 6)}px)`
+            const appeared = p > center - 0.28
+            const targetOpacity = appeared ? Math.max(0.2, 1 - dist * 2.0) : 0
+            const targetY = appeared ? (dist < 0.1 ? 0 : 5) : 28
+            const targetScale = dist < 0.1 ? 1 : 0.94
+            n.style.opacity = targetOpacity.toFixed(2)
+            n.style.transform = `scale(${targetScale}) translateY(${targetY}px)`
           })
         }
       })
     }, wrap)
-
     return () => ctx.revert()
   }, [])
 
   return (
     <section id="services" ref={wrap} className="relative w-full bg-[#050505] overflow-hidden h-screen">
       <div className="absolute top-10 left-0 right-0 z-20">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10 flex items-end justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-white/40 mb-3">How we work</div>
-            <h2 className="font-clash-display-medium text-5xl md:text-7xl">Services.</h2>
-          </div>
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+          <div className="text-xs uppercase tracking-[0.3em] text-white/40 mb-3">How we work</div>
+          <h2 className="font-clash-display-medium text-5xl md:text-7xl">Services.</h2>
         </div>
       </div>
 
       <div className="absolute inset-0 flex items-center">
         <div ref={track} className="flex items-center gap-[8vw] pl-[10vw] pr-[10vw]" style={{ willChange: 'transform' }}>
-          {/* SVG connecting line that runs along the row */}
-          <svg className="absolute top-1/2 -translate-y-1/2 left-0 h-40 pointer-events-none" width="4400" height="160" viewBox="0 0 4400 160" preserveAspectRatio="none">
-            <path ref={pathRef} d="M 0 80 Q 400 0 800 80 T 1600 80 T 2400 80 T 3200 80 T 4000 80 L 4400 80" stroke="white" strokeWidth="1" fill="none" opacity="0.6" />
+          {/* Wavy connector line */}
+          <svg className="absolute top-1/2 -translate-y-1/2 left-0 h-32 pointer-events-none" width="4400" height="128" viewBox="0 0 4400 128" preserveAspectRatio="none">
+            <path d="M 0 64 Q 400 10 800 64 T 1600 64 T 2400 64 T 3200 64 T 4000 64 L 4400 64"
+              stroke="rgba(255,255,255,0.35)" strokeWidth="1" fill="none" strokeDasharray="4 8" />
           </svg>
+
           {STEPS.map((s, i) => (
             <div key={s.n} className="svc-node relative shrink-0 w-[78vw] md:w-[36vw] transition-all duration-300 will-change-transform">
-              <div className="border border-white/10 bg-[#0a0a0a] p-8 md:p-10 relative">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/40">Step</div>
-                  <div className="display text-6xl text-white/20">{s.n}</div>
+              <div className="border border-white/10 bg-[#0a0a0a] p-8 md:p-10 relative overflow-hidden">
+
+                {/* White dot INSIDE the card, top-left corner */}
+                <div className="absolute top-4 left-5 w-4 h-4 bg-white rounded-full shadow-[0_0_14px_rgba(255,255,255,0.5)] z-10" />
+
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-xs uppercase tracking-[0.3em] text-white/40 ml-8">Step</div>
+                  <div className="display text-6xl text-white/15">{s.n}</div>
                 </div>
                 <h3 className="display text-4xl md:text-5xl mt-8">{s.title}</h3>
-                {s.subtitle && (
-                  <div className="mt-3 text-white/90 text-lg font-medium font-general-sans">{s.subtitle}</div>
-                )}
                 <p className="mt-4 font-general-sans text-white/60 text-base leading-relaxed max-w-md">{s.body}</p>
-                {s.buttonText ? (
-                  <div className="mt-8">
-                    <a
-                      href={s.buttonHref}
-                      className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 text-sm font-medium hover:bg-white/90 transition-colors"
-                    >
-                      {s.buttonText} →
-                    </a>
-                  </div>
-                ) : (
-                  <div className="mt-10 flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/40">
-                    <span className="w-8 h-px bg-white/40" /> phase {s.n}
-                  </div>
-                )}
+                <div className="mt-10 flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/35">
+                  <span className="w-6 h-px bg-white/35" /> Phase {s.n}
+                </div>
               </div>
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full" />
             </div>
           ))}
         </div>

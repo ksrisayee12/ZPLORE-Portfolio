@@ -4,15 +4,15 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 function onMag(e) {
-  const r = e.currentTarget.getBoundingClientRect();
-  const dx = e.clientX - (r.left + r.width / 2);
-  const dy = e.clientY - (r.top + r.height / 2);
-  e.currentTarget.style.transform = `translate(${dx * 0.28}px, ${dy * 0.28}px)`;
-  e.currentTarget.style.transition = 'transform 0.05s linear';
+  const r = e.currentTarget.getBoundingClientRect()
+  const dx = e.clientX - (r.left + r.width / 2)
+  const dy = e.clientY - (r.top + r.height / 2)
+  e.currentTarget.style.transform = `translate(${dx * 0.28}px, ${dy * 0.28}px)`
+  e.currentTarget.style.transition = 'transform 0.05s linear'
 }
 function offMag(e) {
-  e.currentTarget.style.transform = 'translate(0,0)';
-  e.currentTarget.style.transition = 'transform 0.35s cubic-bezier(0.23,1,0.32,1)';
+  e.currentTarget.style.transform = 'translate(0,0)'
+  e.currentTarget.style.transition = 'transform 0.35s cubic-bezier(0.23,1,0.32,1)'
 }
 
 gsap.registerPlugin(ScrollTrigger)
@@ -20,69 +20,51 @@ gsap.registerPlugin(ScrollTrigger)
 export default function Hero({ initiallyVisible = false }) {
   const sectionRef = useRef(null)
   const headingRef = useRef(null)
-  const subRef = useRef(null)
+  const line1Ref = useRef(null)
+  const line2Ref = useRef(null)
   const ctaRef = useRef(null)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       const chars = headingRef.current?.querySelectorAll('.char') || []
-      const subWords = subRef.current?.querySelectorAll('.word') || []
       const cta = ctaRef.current
+      const l1 = line1Ref.current
+      const l2 = line2Ref.current
 
       if (initiallyVisible) {
-        // Snap to start state first
         gsap.set(chars, { y: '110%', opacity: 0 })
-        gsap.set(subWords, { y: 14, opacity: 0, filter: 'blur(6px)' })
+        gsap.set([l1, l2], { y: 16, opacity: 0, filter: 'blur(5px)' })
         gsap.set(cta, { y: 20, opacity: 0 })
 
-        // Fast, punchy reveal — no unnecessary delay
         gsap.to(chars, {
-          y: '0%',
-          opacity: 1,
-          stagger: 0.01,
-          duration: 0.9,
-          ease: 'expo.out',
-          delay: 0.05,
+          y: '0%', opacity: 1,
+          stagger: 0.01, duration: 0.9, ease: 'expo.out', delay: 0.05,
         })
-
-        gsap.to(subWords, {
-          y: 0,
-          opacity: 1,
-          filter: 'blur(0px)',
-          stagger: 0.012,
-          duration: 0.8,
-          delay: 0.4,
-          ease: 'power3.out',
+        gsap.to(l1, {
+          y: 0, opacity: 1, filter: 'blur(0px)',
+          duration: 0.75, delay: 0.5, ease: 'power3.out',
         })
-
+        gsap.to(l2, {
+          y: 0, opacity: 1, filter: 'blur(0px)',
+          duration: 0.75, delay: 0.65, ease: 'power3.out',
+        })
         gsap.to(cta, {
-          y: 0,
-          opacity: 1,
-          duration: 0.7,
-          delay: 0.9,
-          ease: 'expo.out',
+          y: 0, opacity: 1, duration: 0.7, delay: 0.9, ease: 'expo.out',
         })
       } else {
-        gsap.set([chars, subWords, cta], { opacity: 1, y: 0, filter: 'blur(0px)' })
+        gsap.set([chars, l1, l2, cta], { opacity: 1, y: 0, filter: 'blur(0px)' })
       }
 
       const st = ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1,
+        start: 'top top', end: 'bottom top', scrub: 1,
         onUpdate: (self) => {
-          if (self.progress > 0.15) {
-            document.body.classList.add('hero-scrolled')
-          } else {
-            document.body.classList.remove('hero-scrolled')
-          }
+          if (self.progress > 0.15) document.body.classList.add('hero-scrolled')
+          else document.body.classList.remove('hero-scrolled')
         },
       })
-
       return () => st.kill()
     }, sectionRef)
-
     return () => ctx.revert()
   }, [initiallyVisible])
 
@@ -90,9 +72,6 @@ export default function Hero({ initiallyVisible = false }) {
     'Building the Layer Beneath Innovation,',
     'Engineering the Next Layer of Intelligence.',
   ]
-
-  const subParagraphText =
-    'Software that thinks. Systems that scale. Products that outlast the trend that inspired them.'
 
   return (
     <section
@@ -105,12 +84,11 @@ export default function Hero({ initiallyVisible = false }) {
         background: 'linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.9) 100%)',
       }} />
 
-      {/* Centered content */}
       <div className="relative z-10 w-full flex flex-col items-center text-center px-6 md:px-10">
         <h1
           ref={headingRef}
           className="font-clash-display leading-[1.15] tracking-tight text-white"
-          style={{ fontSize: 'clamp(20px, 2.8vw, 52px)', maxWidth: '1200px', width: '100%', margin: '0 auto' }}
+          style={{ fontSize: 'clamp(26px, 3.8vw, 68px)', maxWidth: '1200px', width: '100%', margin: '0 auto' }}
         >
           {headlineLines.map((line, i) => (
             <div key={i} className="overflow-hidden py-1 -my-1">
@@ -119,29 +97,32 @@ export default function Hero({ initiallyVisible = false }) {
                   key={j}
                   className="char inline-block"
                   style={{ whiteSpace: c === ' ' ? 'pre' : 'normal' }}
-                >
-                  {c}
-                </span>
+                >{c}</span>
               ))}
             </div>
           ))}
         </h1>
 
-        <p
-          ref={subRef}
-          className="mt-6 font-general-sans text-white/60 leading-relaxed flex flex-wrap justify-center"
-          style={{ fontSize: 'clamp(14px, 1.1vw, 18px)', maxWidth: '680px' }}
+        {/* Sub paragraph: inline flow, only "trend that inspired them." on new line */}
+        <div
+          className="mt-8 font-general-sans text-white/60 text-center"
+          style={{ fontSize: 'clamp(15px, 1.25vw, 20px)', maxWidth: '660px', lineHeight: 1.8 }}
         >
-          {subParagraphText.split(' ').map((word, idx) => (
-            <span
-              key={idx}
-              className="word inline-block mr-[0.28em] py-0.5"
-              style={{ opacity: initiallyVisible ? 1 : 0 }}
-            >
-              {word}
-            </span>
-          ))}
-        </p>
+          <span
+            ref={line1Ref}
+            className="block"
+            style={{ opacity: initiallyVisible ? 1 : 0 }}
+          >
+            Software that thinks. Systems that scale. Products that outlast the
+          </span>
+          <span
+            ref={line2Ref}
+            className="block"
+            style={{ opacity: initiallyVisible ? 1 : 0 }}
+          >
+            trend that inspired them.
+          </span>
+        </div>
 
         <div
           ref={ctaRef}
@@ -154,8 +135,8 @@ export default function Hero({ initiallyVisible = false }) {
               e.preventDefault()
               const el = document.getElementById('the-way-we-build')
               if (el) {
-                if (window.lenis) window.lenis.scrollTo(el, { immediate: true })
-                else window.scrollTo({ top: el.offsetTop, behavior: 'instant' })
+                if (window.__lenis) window.__lenis.scrollTo(el, { offset: -60, duration: 1.4 })
+                else window.scrollTo({ top: el.offsetTop, behavior: 'smooth' })
               }
             }}
             onMouseMove={onMag}
@@ -169,10 +150,6 @@ export default function Hero({ initiallyVisible = false }) {
             </svg>
           </a>
         </div>
-      </div>
-
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
-        <div className="w-[1px] h-8 bg-gradient-to-b from-transparent to-white/20 animate-pulse" />
       </div>
     </section>
   )

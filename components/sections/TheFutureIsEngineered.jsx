@@ -48,9 +48,12 @@ export default function TheFutureIsEngineered() {
             opacity: 0,
             background: '#000000',
             border: '4px solid #ffffff',
-            padding: 'clamp(16px, 3vh, 32px)',
+            // Slightly reduced height via max-height + margin
+            padding: 'clamp(14px, 2.5vh, 28px)',
             fontFamily: 'inherit',
             overflow: 'hidden',
+            maxHeight: '92%',
+            margin: 'auto 0',
           }}
         >
 
@@ -59,7 +62,7 @@ export default function TheFutureIsEngineered() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            marginBottom: 'clamp(12px, 2vh, 24px)',
+            marginBottom: 'clamp(10px, 1.8vh, 20px)',
           }}>
             <span style={{
               fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
@@ -80,7 +83,7 @@ export default function TheFutureIsEngineered() {
           </div>
 
           {/* MAIN CONTENT: left poster area + right panel */}
-          <div style={{ flex: 1, display: 'flex', gap: 'clamp(16px, 2vw, 32px)', alignItems: 'stretch' }}>
+          <div style={{ flex: 1, display: 'flex', gap: 'clamp(14px, 2vw, 28px)', alignItems: 'stretch' }}>
 
             {/* LEFT — oversized headline + italic + bottom labels */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -88,11 +91,12 @@ export default function TheFutureIsEngineered() {
               {/* Oversized headline block */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 
-                {/* NEW POSITION FOR "WE DON'T FOLLOW THE FUTURE" */}
+                {/* "WE DON'T FOLLOW THE FUTURE" */}
                 <div style={{
                   fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
                   fontWeight: 500,
-                  fontSize: 'clamp(16px, 3vh, 32px)',
+                  // +3 from original clamp(16px, 3vh, 32px)
+                  fontSize: 'clamp(19px, 3vh, 35px)',
                   letterSpacing: '0.08em',
                   color: 'rgba(255,255,255,0.8)',
                   textTransform: 'uppercase',
@@ -101,11 +105,12 @@ export default function TheFutureIsEngineered() {
                   WE DON'T FOLLOW THE FUTURE.
                 </div>
 
-                {/* Main ultra-condensed headline (Smaller) */}
+                {/* Main ultra-condensed headline */}
                 <div style={{
                   fontFamily: "'ClashDisplay', 'Bricolage Grotesque', 'Inter', sans-serif",
                   fontWeight: 700,
-                  fontSize: 'clamp(32px, 10vh, 100px)',
+                  // +3 from original clamp(32px, 10vh, 100px)
+                  fontSize: 'clamp(35px, 10vh, 103px)',
                   lineHeight: 0.88,
                   letterSpacing: '-0.03em',
                   color: '#ffffff',
@@ -118,7 +123,8 @@ export default function TheFutureIsEngineered() {
                 <div style={{
                   fontFamily: "'ClashDisplay', 'Bricolage Grotesque', 'Inter', sans-serif",
                   fontWeight: 700,
-                  fontSize: 'clamp(32px, 10vh, 100px)',
+                  // +3 from original
+                  fontSize: 'clamp(35px, 10vh, 103px)',
                   lineHeight: 0.88,
                   letterSpacing: '-0.03em',
                   color: '#ffffff',
@@ -132,7 +138,8 @@ export default function TheFutureIsEngineered() {
                   fontFamily: "'Boska', 'Georgia', 'Times New Roman', serif",
                   fontStyle: 'italic',
                   fontWeight: 400,
-                  fontSize: 'clamp(24px, 7vh, 80px)',
+                  // +3 from original clamp(24px, 7vh, 80px)
+                  fontSize: 'clamp(27px, 7vh, 83px)',
                   lineHeight: 1.0,
                   letterSpacing: '-0.02em',
                   color: '#ffffff',
@@ -142,20 +149,21 @@ export default function TheFutureIsEngineered() {
                 </div>
               </div>
 
-              {/* Bottom left labels */}
+              {/* Bottom left labels — line shifted slightly above */}
               <div style={{
-                marginTop: 'clamp(12px, 2vh, 24px)',
+                marginTop: 'clamp(6px, 1.2vh, 16px)',
                 borderTop: '1px solid rgba(255,255,255,0.15)',
-                paddingTop: 'clamp(10px, 1.5vh, 16px)',
+                paddingTop: 'clamp(6px, 1vh, 12px)',
                 display: 'flex',
                 gap: 'clamp(16px, 3vw, 40px)',
                 alignItems: 'flex-start',
               }}>
                 <div>
+                  {/* +3 on bottom label font sizes: clamp(9px→12px, 1.1vh, 12px→15px) */}
                   <div style={{
                     fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
                     fontWeight: 600,
-                    fontSize: 'clamp(9px, 1.1vh, 12px)',
+                    fontSize: 'clamp(12px, 1.1vh, 15px)',
                     letterSpacing: '0.14em',
                     color: 'rgba(255,255,255,0.5)',
                     textTransform: 'uppercase',
@@ -164,7 +172,7 @@ export default function TheFutureIsEngineered() {
                   <div style={{
                     fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
                     fontWeight: 600,
-                    fontSize: 'clamp(9px, 1.1vh, 12px)',
+                    fontSize: 'clamp(12px, 1.1vh, 15px)',
                     letterSpacing: '0.14em',
                     color: 'rgba(255,255,255,0.5)',
                     textTransform: 'uppercase',
@@ -182,7 +190,7 @@ export default function TheFutureIsEngineered() {
                   <div style={{
                     fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
                     fontWeight: 500,
-                    fontSize: 'clamp(9px, 1.1vh, 12px)',
+                    fontSize: 'clamp(12px, 1.1vh, 15px)',
                     letterSpacing: '0.12em',
                     color: 'rgba(255,255,255,0.4)',
                     textTransform: 'uppercase',
@@ -195,12 +203,13 @@ export default function TheFutureIsEngineered() {
               </div>
             </div>
 
-            {/* RIGHT PANEL — tall editorial description panel */}
+            {/* RIGHT PANEL — taller editorial description panel, increased breadth */}
             <div style={{
-              width: 'clamp(160px, 20vw, 240px)',
+              // Increased breadth: clamp(160px→220px, 20vw→26vw, 240px→320px)
+              width: 'clamp(220px, 26vw, 320px)',
               flexShrink: 0,
               border: '1px solid rgba(255,255,255,0.2)',
-              padding: 'clamp(12px, 2vw, 20px)',
+              padding: 'clamp(14px, 2vw, 24px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -212,7 +221,8 @@ export default function TheFutureIsEngineered() {
                 <p style={{
                   fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
                   fontWeight: 400,
-                  fontSize: 'clamp(9px, 1.1vh, 12px)',
+                  // +3 from clamp(9px, 1.1vh, 12px)
+                  fontSize: 'clamp(12px, 1.1vh, 15px)',
                   lineHeight: 1.6,
                   letterSpacing: '0.01em',
                   color: 'rgba(255,255,255,0.65)',
@@ -223,7 +233,8 @@ export default function TheFutureIsEngineered() {
                 <p style={{
                   fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
                   fontWeight: 400,
-                  fontSize: 'clamp(9px, 1.1vh, 12px)',
+                  // +3 from clamp(9px, 1.1vh, 12px)
+                  fontSize: 'clamp(12px, 1.1vh, 15px)',
                   lineHeight: 1.6,
                   letterSpacing: '0.01em',
                   color: 'rgba(255,255,255,0.65)',
