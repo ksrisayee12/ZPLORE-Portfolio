@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -27,49 +27,14 @@ gsap.registerPlugin(ScrollTrigger)
 export default function Page() {
   const [animationComplete, setAnimationComplete] = useState(false)
 
-  useEffect(() => {
-    let mounted = true
-    let cleanup = null
-    ;(async () => {
-      const { default: lenis } = await import('lenis')
-      const lenisInstance = new lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
-        smooth: true,
-        smoothTouch: false,
-        touchMultiplier: 2,
-      })
-
-      window.lenis = lenisInstance
-
-      function raf(time) {
-        lenisInstance.raf(time)
-        requestAnimationFrame(raf)
-      }
-      requestAnimationFrame(raf)
-
-      lenisInstance.on('scroll', ScrollTrigger.update)
-      ScrollTrigger.addEventListener('refresh', () => lenisInstance.resize())
-
-      // Lenis initialized
-
-      cleanup = () => lenisInstance.destroy()
-    })()
-
-    return () => {
-      mounted = false
-      if (window.lenis) delete window.lenis
-      cleanup?.()
-    }
-  }, [])
-
   const handleAnimationComplete = () => {
     setAnimationComplete(true)
-    // Refresh ScrollTrigger after animation completes and content is revealed
+    // Refresh ScrollTrigger and Lenis after animation completes and content is revealed
     setTimeout(() => {
       ScrollTrigger.refresh()
+      if (window.__lenis) {
+        window.__lenis.resize()
+      }
     }, 300)
   }
 

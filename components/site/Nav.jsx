@@ -19,6 +19,11 @@ export default function Nav() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
+  // Completely remove original navbar on Community pages so Community navbar is the sole navigation system
+  if (pathname?.startsWith('/community')) {
+    return null
+  }
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll, { passive: true })

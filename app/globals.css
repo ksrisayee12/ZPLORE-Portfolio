@@ -226,7 +226,7 @@
 
 * { box-sizing: border-box; }
 html, body { background: var(--bg); color: var(--fg); }
-html { scroll-behavior: auto; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, sans-serif;

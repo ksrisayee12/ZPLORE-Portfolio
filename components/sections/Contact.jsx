@@ -63,10 +63,26 @@ export default function Contact() {
         <div className="font-clash-display text-2xl md:text-3xl text-white/90 mt-6 leading-snug">Build What Doesn't Exist Yet. The Next System Starts With You.</div>
         <p className="font-general-sans text-white/55 mt-4 max-w-md">We reply within one business day.</p>
 
+        {/* Direct Email Contact Pill */}
+        <div className="mt-6 flex flex-wrap items-center gap-3 font-general-sans text-sm">
+          <span className="text-white/50">Direct email:</span>
+          <a
+            href="mailto:contact@zplore.com"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/40 text-white font-medium transition-all group shadow-sm"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#C4FE76] animate-pulse" />
+            <span>contact@zplore.com</span>
+            <span className="text-white/60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-xs">↗</span>
+          </a>
+        </div>
+
         {submitted ? (
-          <div className="mt-16 border border-white/10 p-10">
-            <div className="display text-3xl md:text-4xl">Transmission received.</div>
+          <div className="mt-16 border border-white/10 p-10 bg-white/[0.02] rounded-2xl">
+            <div className="display text-3xl md:text-4xl text-white">Transmission received.</div>
             <p className="font-general-sans text-white/60 mt-3">A senior engineer will be in touch within 24 hours.</p>
+            <p className="font-general-sans text-white/40 mt-4 text-xs">
+              Need immediate assistance? Email us directly at <a href="mailto:contact@zplore.com" className="text-white underline underline-offset-4">contact@zplore.com</a>.
+            </p>
           </div>
         ) : (
           <form onSubmit={submit} className="mt-16 grid md:grid-cols-2 gap-x-12 gap-y-10">
@@ -78,7 +94,13 @@ export default function Contact() {
             <div className="md:col-span-2">
               <Field label="Tell us about the project" name="message" textarea focusName={focusName} setFocusName={setFocusName} required />
             </div>
-            <div className="md:col-span-2 flex items-center justify-end mt-4">
+            <div className="md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
+              <div className="text-xs text-white/50 font-general-sans">
+                Prefer email? Write directly to{' '}
+                <a href="mailto:contact@zplore.com" className="text-white hover:underline underline-offset-4 font-medium">
+                  contact@zplore.com
+                </a>
+              </div>
               <button ref={btnRef} type="submit" className="magnetic group relative inline-flex items-center gap-3 border border-white/30 hover:border-white px-8 py-4 text-sm tracking-wider uppercase transition-colors">
                 <span>Send transmission</span>
                 <span className="transition-transform group-hover:translate-x-1">→</span>
@@ -99,13 +121,11 @@ function Field({ label, name, type = 'text', focusName, setFocusName, required, 
     placeholder,
     onFocus: () => setFocusName(name),
     onBlur: () => setFocusName(null),
-    // Removed outline: 'none' is covered by className, added outline: 0 to fully kill browser default ring/rectangle
     className: 'peer w-full bg-transparent border-0 py-3 text-lg text-white placeholder-white/30 caret-white',
     style: {
       outline: 'none',
       boxShadow: 'none',
       WebkitAppearance: 'none',
-      // Explicitly remove any browser-default focus rectangle
       WebkitTapHighlightColor: 'transparent',
     },
   }
@@ -118,8 +138,11 @@ function Field({ label, name, type = 'text', focusName, setFocusName, required, 
         ) : (
           <input type={type} {...common} />
         )}
-        <span className="absolute left-0 right-0 bottom-0 h-px bg-white/15" />
-        <span className={`absolute left-0 bottom-0 h-px bg-white transition-all duration-500 ${active ? 'w-full' : 'w-0'}`} />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-white/15" />
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px bg-white transition-transform duration-300 origin-left"
+          style={{ transform: active ? 'scaleX(1)' : 'scaleX(0)' }}
+        />
       </div>
     </label>
   )
